@@ -11,6 +11,6 @@
   ],
   "rules": {
     "semi": ["error", "never"],
-    "eol-last": "always"
+    "eol-last": ["error", "always"]
   }
 }
