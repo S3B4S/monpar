@@ -2,6 +2,26 @@
 This is an unambiguous (meaning it expects one correct output for each input) parser that makes use of combinators to combine small pieces of parsers to create bigger ones.
 
 # Guide
+## Table of contents
+- [Parser type](#parser-type)
+- [Combining](#combining)
+- [Utility parsers / functions](#utility-parsers---functions)
+  * [take](#take)
+  * [peek](#peek)
+  * [char](#char)
+  * [sat](#sat)
+  * [alt](#alt)
+  * [alts](#alts)
+  * [guards](#guards)
+  * [token](#token)
+  * [sentence](#sentence)
+  * [tap](#tap)
+  * [logId](#logid)
+  * [unpack](#unpack)
+- [Why alt(s) take "thunks"](#why-alt-s--take--thunks-)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 ## Parser type
 Let's think about what we want a parser to achieve for a second, let's take a simple string.
 ```ts
@@ -324,7 +344,7 @@ unpack(pTag)("<p>Inner text</p>") // undefined
 unpack(pTag)("<h1>") // undefined
 ```
 
-## Why alt and alts take functions that return parsers
+## Why alt(s) take "thunks"
 One thing that we'd like to do with parsing is to be able to call it recursively. Imagine we have the following input.
 ```ts
 const input = `
