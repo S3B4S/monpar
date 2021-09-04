@@ -5,7 +5,7 @@ This is an unambiguous (meaning it expects one correct output for each input) pa
 ## Table of contents
 - [Parser type](#parser-type)
 - [Combining](#combining)
-- [Utility parsers / functions](#utility-parsers---functions)
+- [Helpers](#helpers)
   * [take](#take)
   * [peek](#peek)
   * [char](#char)
@@ -186,7 +186,7 @@ takeFour("<p>This is inner text</p>")
 
 I hope that at this point the reader at least knows how to use `liftAs`, this will be your biggest friend when using this parser library.
 
-## Utility parsers / functions
+## Helpers
 This library provides many utility parsers to get started with, this section will detail how to use these utility parsers.
 
 ### take
