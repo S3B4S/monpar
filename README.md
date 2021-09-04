@@ -202,9 +202,9 @@ Given a predicate that takes the first character as input check whether that hol
 ```ts
 type sat = (pred: (s: string) => boolean) => Parser<string>
 
-const isNumeric = sat(c => /[0-9]/.test(c))
-isNumeric("007") // [["0", "07"]]
-isNumeric("Bond") // []
+const numeric = sat(c => /[0-9]/.test(c))
+numeric("007") // [["0", "07"]]
+numeric("Bond") // []
 ```
 
 ### alt
@@ -214,14 +214,14 @@ One thing that might seem weird is the fact that the second parameter seems to b
 ```ts
 type alt = <T>(parserA: Parser<T>, parserB: () => Parser<T>) => Parser<T>
 
-const isNumeric = sat(c => /[0-9]/.test(c))
-const isAlpha = sat(c => /[a-zA-Z]/.test(c));
+const numeric = sat(c => /[0-9]/.test(c))
+const alpha = sat(c => /[a-zA-Z]/.test(c));
 
-const isAlphaNumeric = alt(isNumeric, () => isAlpha)
+const alphaNumeric = alt(numeric, () => alpha)
 
-isAlphaNumeric("0123") // [["0", "123"]]
-isAlphaNumeric("abc") // [["a", "bc"]]
-isAlphaNumeric("****") // []
+alphaNumeric("0123") // [["0", "123"]]
+alphaNumeric("abc") // [["a", "bc"]]
+alphaNumeric("****") // []
 ```
 
 ### alts
@@ -248,13 +248,20 @@ alphaNumericOrStar("----") // []
 ```
 
 ### guards
-These are exported parsers that will check whether the first char fulfills the predicate.
+These are exported parsers that will take the first character when it fulfills the predicate.
+Though, these are pretty simple, I encourage the reader to create their own such guards suited for their use case.
+The name guard here is made up arbitrarily and doesn't carry a heavy meaning.
 ```ts
-export const alpha = sat(c => /[a-zA-Z]/.test(c));
-export const numeric = sat(c => /[0-9]/.test(c));
-export const alphaNumeric = alt(alpha, () => numeric);
-export const space = sat(eq(" "));
-export const whitespace = sat(c => /[\n\t ]/.test(c));
+type sat = (pred: (s: string) => boolean) => Parser<string>
+// ->
+type guard = Parser<string>
+
+// Each of these are referred to as a guard
+const alpha = sat(c => /[a-zA-Z]/.test(c));
+const numeric = sat(c => /[0-9]/.test(c));
+const alphaNumeric = alt(alpha, () => numeric);
+const space = sat(eq(" "));
+const whitespace = sat(c => /[\n\t ]/.test(c));
 ```
 
 ### token
