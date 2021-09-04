@@ -1,6 +1,50 @@
-import { alt, peek, take, bind, pure, empty, liftAs, many, sat, whitespace, sentence, token, some, char, alts } from "../src"
+import { alt, peek, take, bind, pure, empty, liftAs, many, sat, whitespace, sentence, token, some, char, alts, unpack } from "../src"
 
 describe("Test the primitives", () => {
+  describe("pure", () => {
+    test("Should return parser from given input", () => {
+      expect(pure("input")("<html>")).toStrictEqual([["input", "<html>"]])    
+    })
+  })
+
+  describe("emppty", () => {
+    test("Should return parser that returns empty list", () => {
+      expect(empty()("input")).toStrictEqual([])
+    })
+  })
+
+  describe("bind", () => {
+    test("Should create new parser that combines 2 takes", () => {
+      expect(bind(take, x => bind(take, y => pure(x + y)))("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<h", "tml><body><p>This is main text.</p></body></html>"]])
+    })
+
+    test("If a parser fails midway through bind, return empty result", () => {
+      const takeThree = bind(
+        take, x => bind(
+        take, y => bind(
+        take, z => 
+          pure(x + y + z)
+        )))
+      expect(takeThree("i")).toStrictEqual([])
+    })
+  })
+
+  describe("liftAs", () => {
+    test("Should create new parser that combines 2 takes", () => {
+      expect(liftAs(x => y => x + y, take, take)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<h", "tml><body><p>This is main text.</p></body></html>"]])
+    })
+
+    test("If a parser fails midway through liftAs, return empty result", () => {
+      const takeThree = liftAs(
+        x => y => z => x + y + z,
+        take,
+        take,
+        take,
+      )
+      expect(takeThree("i")).toStrictEqual([])
+    })
+  })
+
   describe("take", () => {
     test("Should succeed with input length > 0", () => {
       expect(take("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
@@ -109,18 +153,6 @@ describe("Test the primitives", () => {
     })
   })
 
-  describe("bind", () => {
-    test("Should create new parser that combines 2 takes", () => {
-      expect(bind(take, x => bind(take, y => pure(x + y)))("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<h", "tml><body><p>This is main text.</p></body></html>"]])
-    })
-  })
-
-  describe("liftAs", () => {
-    test("Should create new parser that combines 2 takes", () => {
-      expect(liftAs(x => y => x + y, take, take)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<h", "tml><body><p>This is main text.</p></body></html>"]])
-    })
-  })
-
   describe("many", () => {
     test("Should get as many characters as possible", () => {
       expect(many(take)("Words.")).toStrictEqual([[["W", "o", "r", "d", "s", "."], ""]])
@@ -176,6 +208,24 @@ describe("Test the primitives", () => {
   describe("token", () => {
     test("Should match given string surrounded by whitespace", () => {
       expect(token(sentence("<html>"))("  \t  \n <html>  \t \n")).toStrictEqual([["<html>", ""]])
+    })
+
+    test("Should fail if given parser can't take input", () => {
+      expect(token(sentence("<html>"))("  \t \n <p> \t  \n")).toStrictEqual([])
+    })
+  })
+
+  describe("unpack", () => {
+    test("Should succesfully unpack if input has been completely parsed succesfully", () => {
+      expect(unpack(sentence("<html>"))("<html>")).toBe("<html>")
+    })
+
+    test("Should fail if the remainder of the input string is not empty", () => {
+      expect(unpack(sentence("<html>"))("<html></html>")).toBeUndefined()
+    })
+    
+    test("Should fail if the parser has failed", () => {
+      expect(unpack(sentence("<html>"))("<p>")).toBeUndefined()
     })
   })
 })
