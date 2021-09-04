@@ -83,7 +83,6 @@ export const some = <T>(parser: Parser<T>): Parser<T[]> => {
   }
 }
 
-export const id = <T>(a: T): T => a
 export const take: Parser<string> = inp => inp.length > 0 ? [[inp[0], inp.slice(1)]] : []
 export const peek: Parser<string> = inp => [[inp[0] || "", inp]]
 export const takeDigit: Parser<number> = liftAs(
@@ -103,11 +102,11 @@ export const sat = (pred: (s: string) => boolean): Parser<string> => {
   })
 }
 
+const eq = <T>(x: T) => (y: T): boolean => x === y
+
 export const alpha = sat(c => /[a-zA-Z]/.test(c))
 export const numeric = sat(c => /[0-9]/.test(c))
 export const aphaNumeric = alt(alpha, () => numeric)
-
-const eq = <T>(x: T) => (y: T): boolean => x === y
 export const space = sat(eq(" "))
 export const char = (c: string): Parser<string> => sat(eq(c))
 
