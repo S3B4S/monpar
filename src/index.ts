@@ -29,15 +29,18 @@ export const bind = <A, B>(parser: Parser<A>, fn: (a: A) => Parser<B>): Parser<B
   }
 }
 
+const ap = <A, B>(parserFn: Parser<(i: A) => B>, parserA: Parser<A>): Parser<B> => {
+  return bind(parserFn, fn => fmap(fn, parserA));
+}
+
 /// Primitives ///
 export const liftAs = <T>(fn: any, ...fns: Parser<any>[]): Parser<T> => {
+  // fn
   if (fns.length === 0) return fn
-  else if (fns.length === 1) return fmap(fn, fns[0]) 
-  else {
-    return bind(fns[0], (res) => {
-      return liftAs(fn(res), ...fns.slice(1))
-    })
-  }
+  // fn <$> p0
+  else if (fns.length === 1) return fmap(fn, fns[0])
+  // fn <$> p0 <*> p1 <*> ... <*> pn
+  return fns.slice(1).reduce((a, b) => ap(a, b), fmap(fn, fns[0]))
 }
 
 // Parse through first given parser if possible,
