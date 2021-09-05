@@ -2,6 +2,7 @@
 This is an unambiguous (meaning it expects one correct output for each input) parser that makes use of combinators to combine small pieces of parsers to create bigger ones.
 
 # Guide
+- [Installing](#installing)
 - [Parser type](#parser-type)
 - [Combining](#combining)
 - [Helpers](#helpers)
