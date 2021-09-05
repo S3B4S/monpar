@@ -1,12 +1,13 @@
 {
-  "name": "monadic-parser-ts",
+  "name": "monpar",
   "version": "1.0.0",
   "description": "A monadic parser implemented in TS.",
-  "main": "dist/app.js",
+  "main": "dist/index.js",
   "scripts": {
     "start:dev": "nodemon",
     "test": "jest",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "build": "tsc"
   },
   "author": "S3B4S",
   "license": "ISC",

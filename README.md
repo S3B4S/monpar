@@ -409,7 +409,7 @@ type LazyVal<T> = (() => T) | T
 
 So really, all it means is that the given argument might be wrapped in a function so we can delay the evaluation (call it when we need it, in other words, it's lazy).
 
-The `thunk` functions is he following:
+The `thunk` function is the following:
 ```ts
 export const thunk = <T>(x: T): LazyVal<T> => () => x
 ```
