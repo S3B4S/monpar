@@ -1,9 +1,11 @@
 /// Fundamental blocks ///
+
 // Result is a list of tuples
 // An empty list means something the parser wasn't able to parse the input
 type ParserRes<T> = [T, string][]
 export type Parser<T> = (inp: string) => ParserRes<T>
 
+// Functor
 // Returns a new parser that applies the function
 const fmap = <A, B>(fn: (a: A) => B, parser: Parser<A>): Parser<B> => {
   return inp => {
@@ -15,10 +17,16 @@ const fmap = <A, B>(fn: (a: A) => B, parser: Parser<A>): Parser<B> => {
   }
 }
 
+// Applicative
 export const pure = <T>(a: T): Parser<T> => inp => [[a, inp]]
 
 export const empty = <T>(): Parser<T> => () => []
 
+export const ap = <A, B>(parserFn: Parser<(i: A) => B>, parserA: Parser<A>): Parser<B> => {
+  return bind(parserFn, fn => fmap(fn, parserA));
+}
+
+// Monad
 export const bind = <A, B>(parser: Parser<A>, fn: (a: A) => Parser<B>): Parser<B> => {
   return inp => {
     const res = parser(inp)
@@ -27,10 +35,6 @@ export const bind = <A, B>(parser: Parser<A>, fn: (a: A) => Parser<B>): Parser<B
     const [v, out] = res[0]
     return fn(v)(out)
   }
-}
-
-const ap = <A, B>(parserFn: Parser<(i: A) => B>, parserA: Parser<A>): Parser<B> => {
-  return bind(parserFn, fn => fmap(fn, parserA));
 }
 
 /// Primitives ///
