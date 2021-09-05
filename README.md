@@ -22,6 +22,11 @@ This is an unambiguous (meaning it expects one correct output for each input) pa
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
+## Installing
+```
+npm i "monpar"
+```
+
 ## Parser type
 Let's think about what we want a parser to achieve for a second, let's take a simple string.
 
