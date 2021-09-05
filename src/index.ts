@@ -5,6 +5,21 @@
 type ParserRes<T> = [T, string][]
 export type Parser<T> = (inp: string) => ParserRes<T>
 
+// Thunks
+type LazyVal<A> = (() => A) | A
+
+const isImmediate = <A>(t: LazyVal<A>): t is A => {
+  return (typeof t != "function" || t.length != 0);
+}
+
+const force = <A>(t: LazyVal<A>): A => {
+  if (isImmediate(t)) {
+    return t;
+  } else {
+    return t();
+  }
+}
+
 // Functor
 // Returns a new parser that applies the function
 const fmap = <A, B>(fn: (a: A) => B, parser: Parser<A>): Parser<B> => {
@@ -49,10 +64,10 @@ export const liftAs = <T>(fn: any, ...fns: Parser<any>[]): Parser<T> => {
 
 // Parse through first given parser if possible,
 // Else parse through second parser
-export const alt = <T>(parserA: Parser<T>, parserB: () => Parser<T>): Parser<T> => {
+export const alt = <T>(parserA: Parser<T>, parserB: LazyVal<Parser<T>>): Parser<T> => {
   return inp => {
     const res = parserA(inp)
-    if (res.length === 0) return parserB()(inp)
+    if (res.length === 0) return force(parserB)(inp)
     return res
   }
 }

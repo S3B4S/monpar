@@ -98,16 +98,16 @@ describe("Test the primitives", () => {
   })
 
   describe("alt", () => {
-    test("Take at start should return take", () => {
+    test("Take at start should return result of take", () => {
       expect(alt(take, empty)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
     })
   
     test("Empty at start should be skipped in favor of take", () => {
-      expect(alt(empty(), () => take)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
+      expect(alt(empty(), take)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
     })
 
     test("None matching should fail", () => {
-      expect(alt(char("*"), () => char("-"))("&")).toStrictEqual([])
+      expect(alt(char("*"), char("-"))("&")).toStrictEqual([])
     })
   })
 
