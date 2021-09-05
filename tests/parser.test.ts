@@ -98,15 +98,27 @@ describe("Test the primitives", () => {
   })
 
   describe("alt", () => {
-    test("Take at start should return result of take", () => {
+    test("Take at start should return result of take, thunk", () => {
+      expect(alt(take, () => empty())("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
+    })
+  
+    test("Empty at start should be skipped in favor of take, thunk", () => {
+      expect(alt(empty(), () => take)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
+    })
+
+    test("None matching should fail, thunk", () => {
+      expect(alt(char("*"), () => char("-"))("&")).toStrictEqual([])
+    })
+
+    test("Take at start should return result of take, non-thunk", () => {
       expect(alt(take, empty)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
     })
   
-    test("Empty at start should be skipped in favor of take", () => {
+    test("Empty at start should be skipped in favor of take, non-thunk", () => {
       expect(alt(empty(), take)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
     })
 
-    test("None matching should fail", () => {
+    test("None matching should fail, non-thunk", () => {
       expect(alt(char("*"), char("-"))("&")).toStrictEqual([])
     })
   })
