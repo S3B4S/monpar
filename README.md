@@ -2,7 +2,6 @@
 This is an unambiguous (meaning it expects one correct output for each input) parser that makes use of combinators to combine small pieces of parsers to create bigger ones.
 
 # Guide
-## Table of contents
 - [Parser type](#parser-type)
 - [Combining](#combining)
 - [Helpers](#helpers)
@@ -18,7 +17,7 @@ This is an unambiguous (meaning it expects one correct output for each input) pa
   * [tap](#tap)
   * [logId](#logid)
   * [unpack](#unpack)
-- [Why alt(s) take "thunks"](#why-alts-take-thunks)
+- [Why alt(s) can take "thunks"](#why-alts-can-take-thunks-)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
@@ -230,14 +229,14 @@ numeric("Bond") // []
 ### alt
 Given two parsers, going from left to right, return any successful result encountered, else fail.
 Note that both parsers should return the same result.
-One thing that might seem weird is the fact that the second parameter seems to be wrapped in a function unnecessarily, an explanation for why this is can be found below.
+The `LazyVal<Parser<T>>` type might surprise you a bit, despite a `Parser<T>` type being passed in the exmaple, the need for `LazyVal<Parser<T>>` is explained in [this section](#why-alts-can-take-thunks).
 ```ts
-type alt = <T>(parserA: Parser<T>, parserB: () => Parser<T>) => Parser<T>
+type alt = <T>(parserA: LazyVal<Parser<T>>, parserB: LazyVal<Parser<T>>) => Parser<T>
 
 const numeric = sat(c => /[0-9]/.test(c))
 const alpha = sat(c => /[a-zA-Z]/.test(c));
 
-const alphaNumeric = alt(numeric, () => alpha)
+const alphaNumeric = alt(numeric, alpha)
 
 alphaNumeric("0123") // [["0", "123"]]
 alphaNumeric("abc") // [["a", "bc"]]
@@ -247,18 +246,18 @@ alphaNumeric("****") // []
 ### alts
 Takes in a list of functions that return parsers, goes through the entire list until it finds a parser that successfully returns a result, else fails.
 This is a variation of `alt` where you can pass a list of parsers.
-See below for an explanation on why this is a list of functions and not just parsers.
+The `LazyVal<Parser<T>>` type might surprise you a bit, despite a `Parser<T>` type being passed in the exmaple, the need for `LazyVal<Parser<T>>` is explained in [this section](#why-alts-can-take-thunks).
 ```ts
-type alts = <T>(...parsers: (() => Parser<T>)[]) => Parser<T>
+type alts = <T>(...parsers: LazyVal<Parser<T>>[]) => Parser<T>
 
 const numeric = sat(c => /[0-9]/.test(c))
 const alpha = sat(c => /[a-zA-Z]/.test(c));
 const star = char("*")
 
 const alphaNumericOrStar = alts(
-  () => numeric,
-  () => alpha,
-  () => star,
+  numeric,
+  alpha,
+  star,
 )
 
 alphaNumericOrStar("0123") // [["0", "123"]]
@@ -344,7 +343,7 @@ unpack(pTag)("<p>Inner text</p>") // undefined
 unpack(pTag)("<h1>") // undefined
 ```
 
-## Why alt(s) take "thunks"
+## Why alt(s) can take "thunks"
 One thing that we'd like to do with parsing is to be able to call it recursively. Imagine we have the following input.
 ```ts
 const input = `
@@ -356,7 +355,7 @@ const input = `
 `
 ```
 
-And we have a parser that can parse away an opening tag, a closing tag and checks whether the part in the middle is text, else assume that it's another node and recursively calls itself. Let's see how that would look like without functions being passed to `alt`.
+And we have a parser that can parse away an opening tag, a closing tag and checks whether the part in the middle is text, else assume that it's another node and recursively calls itself.
 
 ```ts
 const parseHTMLNode = liftAs(
@@ -367,9 +366,11 @@ const parseHTMLNode = liftAs(
 )
 ```
 
-This will give us an error because the variable can't refer to itself from within, so, we have to convert this to a function:
+This will give us an error because the variable can't refer to itself from within, so, we have to convert this to a function and recursively call itself to get the parser:
 
 ```ts
+import { alt, liftAs } from "monpar"
+
 const parseHTMLNode = () => liftAs(
   (tag: string) => (child: Node | string) => () => ({ node: tag, child }),
   parseOpeningTag,
@@ -381,11 +382,53 @@ const parseHTMLNode = () => liftAs(
 So, now we can correctly call `parseHTMLNode` recursively, but, another issue arises now. Because JavaScript will evaluate the argument before passing it down, this will cause an infinite loop. But that shouldn't be necessary right? Because if `parseInnerText` would succeed in `alt`, we don't want to even evaluate the second parser. Thus, the solution here is to pass a "thunk", meaning, wrap it in a function and only evaluate when you do need it:
 
 ```ts
+import { alt, liftAs, thunk } from "monpar"
+
 const parseHTMLNode = () => liftAs(
   (tag: string) => (child: Node | string) => () => ({ node: tag, child }),
   parseOpeningTag,
-  alt(parseInnerText, () => parseHTMLNode()), // same as: alt(parseInnerText, parseHTMLNode)
+  alt(parseInnerText, thunk(parseHTMLNode),
   parseClosingTag,
 )
 ```
-So now `alt` takes a thunk for the second parameter and only evaluates it if the first would fail, thus we don't have the issue of infinite recursion.
+Now `alt` takes a thunk for the second parameter and only evaluates it if the first would fail, thus we don't have the issue of infinite recursion.
+
+The type of the thunk simply looks like
+```ts
+type LazyVal<T> = (() => T) | T
+```
+
+So really, all it means is that the given argument might be wrapped in a function so we can delay the evaluation (call it when we need it, in other words, it's lazy).
+
+The `thunk` functions is he following:
+```ts
+export const thunk = <T>(x: T): LazyVal<T> => () => x
+```
+It just wraps the given argument in a function, thus, the following lines are equivalent:
+```ts
+alt(parseInnerText, thunk(parseHTMLNode),
+alt(parseInnerText, () => parseHTMLNode()),
+alt(parseInnerText, parseHTMLNode),
+```
+
+One more thing, both positions in `alt` can take a `LazyVal<Parser<T>>`, incuding the one where we don't need it, as the first parser will always be called, it's the parser (or parsers in case of `alts`) that come afterwards we _might_ call.
+
+However, purely for ergonomical reasons all of the arguments passed are of type `LazyVal<Parser<T>>` so that you can choose to write the following:
+```ts
+alts(
+  thunk(emptyTag),
+  thunk(HTMLelement),
+  thunk(Innertext),
+)
+```
+
+instead of being forced to do
+```ts
+alts(
+  emptyTag,
+  thunk(HTMLelement),
+  thunk(Innertext),
+)
+```
+
+So, it's up to the reader what they would prefer, the important thing is knowing that the first parser always gets called, the ones that come afterwards _might_ get called.

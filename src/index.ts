@@ -32,7 +32,8 @@ const fmap = <A, B>(fn: (a: A) => B, parser: Parser<A>): Parser<B> => {
 // Applicative
 export const pure = <T>(a: T): Parser<T> => inp => [[a, inp]]
 
-export const empty = <T>(): Parser<T> => () => []
+// The input gets ignored, but we still need the input parameter because of `LazyVal`.
+export const empty: Parser<never> = inp => []
 
 export const ap = <A, B>(parserFn: Parser<(i: A) => B>, parserA: Parser<A>): Parser<B> => {
   return bind(parserFn, fn => fmap(fn, parserA))
@@ -59,9 +60,9 @@ export const liftAs = <T>(fn: any, ...fns: Parser<any>[]): Parser<T> => {
 
 // Parse through first given parser if possible,
 // Else parse through second parser
-export const alt = <T>(parserA: Parser<T>, parserB: LazyVal<Parser<T>>): Parser<T> => {
+export const alt = <T>(parserA: LazyVal<Parser<T>>, parserB: LazyVal<Parser<T>>): Parser<T> => {
   return inp => {
-    const res = parserA(inp)
+    const res = force(parserA)(inp)
     if (parserHasFailed(res)) return force(parserB)(inp)
     return res
   }
@@ -114,7 +115,7 @@ export const sentence = (str: string): Parser<string> => (inp: string) => {
 
 export const sat = (pred: (s: string) => boolean): Parser<string> => {
   return bind(take, (x: string) => {
-    return pred(x) ? pure(x) : empty()
+    return pred(x) ? pure(x) : empty
   })
 }
 

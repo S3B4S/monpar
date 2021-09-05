@@ -9,7 +9,7 @@ describe("Test the primitives", () => {
 
   describe("empty", () => {
     test("Should return parser that returns empty list", () => {
-      expect(empty()("input")).toStrictEqual([])
+      expect(empty("input")).toStrictEqual([])
     })
   })
 
@@ -100,15 +100,15 @@ describe("Test the primitives", () => {
   describe("alt", () => {
     describe("with a thunk", () => {
       test("Take at start should return result of take", () => {
-        expect(alt(take, () => empty())("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
+        expect(alt(() => take, () => empty)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
       })
     
       test("Empty at start should be skipped in favor of take", () => {
-        expect(alt(empty(), () => take)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
+        expect(alt(() => empty, () => take)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
       })
   
       test("None matching should fail", () => {
-        expect(alt(char("*"), () => char("-"))("&")).toStrictEqual([])
+        expect(alt(() => char("*"), () => char("-"))("&")).toStrictEqual([])
       })
     })
 
@@ -118,7 +118,7 @@ describe("Test the primitives", () => {
       })
     
       test("Empty at start should be skipped in favor of take", () => {
-        expect(alt(empty(), take)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
+        expect(alt(empty, take)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
       })
   
       test("None matching should fail", () => {
