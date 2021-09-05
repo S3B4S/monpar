@@ -7,7 +7,7 @@ describe("Test the primitives", () => {
     })
   })
 
-  describe("emppty", () => {
+  describe("empty", () => {
     test("Should return parser that returns empty list", () => {
       expect(empty()("input")).toStrictEqual([])
     })
@@ -98,70 +98,118 @@ describe("Test the primitives", () => {
   })
 
   describe("alt", () => {
-    test("Take at start should return result of take, thunk", () => {
-      expect(alt(take, () => empty())("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
-    })
+    describe("with a thunk", () => {
+      test("Take at start should return result of take", () => {
+        expect(alt(take, () => empty())("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
+      })
+    
+      test("Empty at start should be skipped in favor of take", () => {
+        expect(alt(empty(), () => take)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
+      })
   
-    test("Empty at start should be skipped in favor of take, thunk", () => {
-      expect(alt(empty(), () => take)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
+      test("None matching should fail", () => {
+        expect(alt(char("*"), () => char("-"))("&")).toStrictEqual([])
+      })
     })
 
-    test("None matching should fail, thunk", () => {
-      expect(alt(char("*"), () => char("-"))("&")).toStrictEqual([])
-    })
-
-    test("Take at start should return result of take, non-thunk", () => {
-      expect(alt(take, empty)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
-    })
+    describe("without a thunk", () => {
+      test("Take at start should return result of take", () => {
+        expect(alt(take, empty)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
+      })
+    
+      test("Empty at start should be skipped in favor of take", () => {
+        expect(alt(empty(), take)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
+      })
   
-    test("Empty at start should be skipped in favor of take, non-thunk", () => {
-      expect(alt(empty(), take)("<html><body><p>This is main text.</p></body></html>")).toStrictEqual([["<", "html><body><p>This is main text.</p></body></html>"]])
-    })
-
-    test("None matching should fail, non-thunk", () => {
-      expect(alt(char("*"), char("-"))("&")).toStrictEqual([])
+      test("None matching should fail", () => {
+        expect(alt(char("*"), char("-"))("&")).toStrictEqual([])
+      })
     })
   })
 
   describe("alts", () => {
-    describe("Matches first given parser", () => {
-      const numeric = sat(c => /[0-9]/.test(c))
-      const alpha = sat(c => /[a-zA-Z]/.test(c))
-      const star = char("*")
+    describe("with a thunk", () => {
+      test("Matches first given parser", () => {
+        const numeric = sat(c => /[0-9]/.test(c))
+        const alpha = sat(c => /[a-zA-Z]/.test(c))
+        const star = char("*")
+  
+        expect(alts(() => numeric, () => alpha, () => star)("0123")).toStrictEqual([["0", "123"]])
+      })
+  
+      test("Matches second given parser", () => {
+        const numeric = sat(c => /[0-9]/.test(c))
+        const alpha = sat(c => /[a-zA-Z]/.test(c))
+        const star = char("*")
+  
+        expect(alts(() => numeric, () => alpha, () => star)("abc")).toStrictEqual([["a", "bc"]])
+      })
+  
+      test("Matches third given parser", () => {
+        const numeric = sat(c => /[0-9]/.test(c))
+        const alpha = sat(c => /[a-zA-Z]/.test(c))
+        const star = char("*")
+  
+        expect(alts(() => numeric, () => alpha, () => star)("*****")).toStrictEqual([["*", "****"]])
+      })
+  
+      test("No parser matches, should fail", () => {
+        const numeric = sat(c => /[0-9]/.test(c))
+        const alpha = sat(c => /[a-zA-Z]/.test(c))
+        const star = char("*")
+  
+        expect(alts(() => numeric, () => alpha, () => star)("---")).toStrictEqual([])
+      })
 
-      expect(alts(() => numeric, () => alpha, () => star)("0123")).toStrictEqual([["0", "123"]])
+      test("Empty input given, should fail", () => {
+        const numeric = sat(c => /[0-9]/.test(c))
+        const alpha = sat(c => /[a-zA-Z]/.test(c))
+        const star = char("*")
+  
+        expect(alts(() => numeric, () => alpha, () => star)("")).toStrictEqual([])
+      })
     })
 
-    describe("Matches second given parser", () => {
-      const numeric = sat(c => /[0-9]/.test(c))
-      const alpha = sat(c => /[a-zA-Z]/.test(c))
-      const star = char("*")
-
-      expect(alts(() => numeric, () => alpha, () => star)("abc")).toStrictEqual([["a", "bc"]])
-    })
-
-    describe("Matches third given parser", () => {
-      const numeric = sat(c => /[0-9]/.test(c))
-      const alpha = sat(c => /[a-zA-Z]/.test(c))
-      const star = char("*")
-
-      expect(alts(() => numeric, () => alpha, () => star)("*****")).toStrictEqual([["*", "****"]])
-    })
-
-    describe("No parser matches, should fail", () => {
-      const numeric = sat(c => /[0-9]/.test(c))
-      const alpha = sat(c => /[a-zA-Z]/.test(c))
-      const star = char("*")
-
-      expect(alts(() => numeric, () => alpha, () => star)("---")).toStrictEqual([])
-    })
-
-    describe("Empty input given, should fail", () => {
-      const numeric = sat(c => /[0-9]/.test(c))
-      const alpha = sat(c => /[a-zA-Z]/.test(c))
-      const star = char("*")
-
-      expect(alts(() => numeric, () => alpha, () => star)("")).toStrictEqual([])
+    describe("without a thunk", () => {
+      test("Matches first given parser", () => {
+        const numeric = sat(c => /[0-9]/.test(c))
+        const alpha = sat(c => /[a-zA-Z]/.test(c))
+        const star = char("*")
+  
+        expect(alts(numeric, alpha, star)("0123")).toStrictEqual([["0", "123"]])
+      })
+  
+      test("Matches second given parser", () => {
+        const numeric = sat(c => /[0-9]/.test(c))
+        const alpha = sat(c => /[a-zA-Z]/.test(c))
+        const star = char("*")
+  
+        expect(alts(numeric, alpha, star)("abc")).toStrictEqual([["a", "bc"]])
+      })
+  
+      test("Matches third given parser", () => {
+        const numeric = sat(c => /[0-9]/.test(c))
+        const alpha = sat(c => /[a-zA-Z]/.test(c))
+        const star = char("*")
+  
+        expect(alts(numeric, alpha, star)("*****")).toStrictEqual([["*", "****"]])
+      })
+  
+      test("No parser matches, should fail", () => {
+        const numeric = sat(c => /[0-9]/.test(c))
+        const alpha = sat(c => /[a-zA-Z]/.test(c))
+        const star = char("*")
+  
+        expect(alts(numeric, alpha, star)("---")).toStrictEqual([])
+      })
+  
+      describe("Empty input given, should fail", () => {
+        const numeric = sat(c => /[0-9]/.test(c))
+        const alpha = sat(c => /[a-zA-Z]/.test(c))
+        const star = char("*")
+  
+        expect(alts(numeric, alpha, star)("")).toStrictEqual([])
+      })
     })
   })
 

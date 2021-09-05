@@ -8,13 +8,14 @@ export type Parser<T> = (inp: string) => ParserRes<T>
 const parserHasFailed = <T>(result: ParserRes<T>) => result.length === 0
 
 // Thunks
-type LazyVal<A> = (() => A) | A
+type LazyVal<T> = (() => T) | T
 
-const isImmediate = <A>(t: LazyVal<A>): t is A => {
-  return (typeof t != "function" || t.length != 0)
+const isImmediate = <T>(t: LazyVal<T>): t is T => {
+  return (typeof t !== "function" || t.length !==  0)
 }
 
-const force = <A>(t: LazyVal<A>): A => isImmediate(t) ? t : t()
+const force = <T>(t: LazyVal<T>): T => isImmediate(t) ? t : t()
+export const thunk = <T>(x: T): LazyVal<T> => () => x
 
 // Functor
 // Returns a new parser that applies the function
@@ -52,8 +53,6 @@ export const bind = <A, B>(parser: Parser<A>, fn: (a: A) => Parser<B>): Parser<B
 export const liftAs = <T>(fn: any, ...fns: Parser<any>[]): Parser<T> => {
   // fn
   if (fns.length === 0) return fn
-  // fn <$> p0
-  else if (fns.length === 1) return fmap(fn, fns[0])
   // fn <$> p0 <*> p1 <*> ... <*> pn
   return fns.slice(1).reduce((a, b) => ap(a, b), fmap(fn, fns[0]))
 }
@@ -68,9 +67,8 @@ export const alt = <T>(parserA: Parser<T>, parserB: LazyVal<Parser<T>>): Parser<
   }
 }
 
-// Assume parsers.length > 1
-export const alts = <T>(...parsers: (() => Parser<T>)[]): Parser<T> => {
-  return parsers.reduce((acc, curr) => () => alt(acc(), curr))()
+export const alts = <T>(...parsers: LazyVal<Parser<T>>[]): Parser<T> => {
+  return parsers.slice(1).reduce<Parser<T>>((acc, curr) => alt(acc, curr), force(parsers[0]))
 }
 
 // 0..n
