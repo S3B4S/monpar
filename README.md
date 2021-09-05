@@ -17,7 +17,7 @@ This is an unambiguous (meaning it expects one correct output for each input) pa
   * [tap](#tap)
   * [logId](#logid)
   * [unpack](#unpack)
-- [Why alt(s) can take "thunks"](#why-alts-can-take-thunks-)
+- [Why alt(s) can take "thunks"](#why-alts-can-take-thunks)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
