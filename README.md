@@ -18,6 +18,7 @@ This is an unambiguous (meaning it expects one correct output for each input) pa
   * [logId](#logid)
   * [unpack](#unpack)
 - [Why alt(s) can take "thunks"](#why-alts-can-take-thunks)
+- [Credits](#credits)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
@@ -432,3 +433,6 @@ alts(
 ```
 
 So, it's up to the reader what they would prefer, the important thing is knowing that the first parser always gets called, the ones that come afterwards _might_ get called.
+
+## Credits
+Shoutout to [@emiflake](https://github.com/emiflake) for helping out with the creation of this library.
