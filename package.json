@@ -11,7 +11,7 @@
     "start:dev": "nodemon",
     "test": "jest",
     "lint": "eslint . --ext .ts",
-    "build": "tsc"
+    "build": "rm -r dist && tsc -p tsconfig.cjs.json && tsc -p tsconfig.mjs.json && ./fix-up.sh"
   },
   "author": "S3B4S",
   "license": "ISC",

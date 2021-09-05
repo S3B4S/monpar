@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
+    "strict": true,
     "module": "commonjs",
     "esModuleInterop": true,
     "target": "es6",
     "moduleResolution": "node",
     "sourceMap": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "lib": ["es2015"],
+    "declaration": true
   },
-  "lib": ["es2015"],
   "exclude": ["./tests"]
 }
