@@ -1,31 +1,27 @@
 /// Fundamental blocks ///
 
 // Result is a list of tuples
-// An empty list means something the parser wasn't able to parse the input
+// An empty list means the parser has failed to parse the input
 type ParserRes<T> = [T, string][]
 export type Parser<T> = (inp: string) => ParserRes<T>
+
+const parserHasFailed = <T>(result: ParserRes<T>) => result.length === 0
 
 // Thunks
 type LazyVal<A> = (() => A) | A
 
 const isImmediate = <A>(t: LazyVal<A>): t is A => {
-  return (typeof t != "function" || t.length != 0);
+  return (typeof t != "function" || t.length != 0)
 }
 
-const force = <A>(t: LazyVal<A>): A => {
-  if (isImmediate(t)) {
-    return t;
-  } else {
-    return t();
-  }
-}
+const force = <A>(t: LazyVal<A>): A => isImmediate(t) ? t : t()
 
 // Functor
 // Returns a new parser that applies the function
 const fmap = <A, B>(fn: (a: A) => B, parser: Parser<A>): Parser<B> => {
   return inp => {
     const res = parser(inp)
-    if (res.length === 0) return []
+    if (parserHasFailed(res)) return []
 
     const [v, out] = res[0]
     return [[fn(v), out]]
@@ -38,14 +34,14 @@ export const pure = <T>(a: T): Parser<T> => inp => [[a, inp]]
 export const empty = <T>(): Parser<T> => () => []
 
 export const ap = <A, B>(parserFn: Parser<(i: A) => B>, parserA: Parser<A>): Parser<B> => {
-  return bind(parserFn, fn => fmap(fn, parserA));
+  return bind(parserFn, fn => fmap(fn, parserA))
 }
 
 // Monad
 export const bind = <A, B>(parser: Parser<A>, fn: (a: A) => Parser<B>): Parser<B> => {
   return inp => {
     const res = parser(inp)
-    if (res.length === 0) return []
+    if (parserHasFailed(res)) return []
 
     const [v, out] = res[0]
     return fn(v)(out)
@@ -67,7 +63,7 @@ export const liftAs = <T>(fn: any, ...fns: Parser<any>[]): Parser<T> => {
 export const alt = <T>(parserA: Parser<T>, parserB: LazyVal<Parser<T>>): Parser<T> => {
   return inp => {
     const res = parserA(inp)
-    if (res.length === 0) return force(parserB)(inp)
+    if (parserHasFailed(res)) return force(parserB)(inp)
     return res
   }
 }
@@ -153,8 +149,7 @@ export const tap = (tapFn: (s: string) => void): Parser<undefined> => inp => {
 
 export const unpack = <T>(parser: Parser<T>) => (inp: string): T | undefined => {
   const res = parser(inp)
-  // If the parser failed
-  if (res.length === 0) return
+  if (parserHasFailed(res)) return
   // If the parser has elements left over that aren't parsed
   if (res[0][1] !== "") return
   // If all has succeeded, return output of parser
