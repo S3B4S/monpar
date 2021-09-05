@@ -1,6 +1,6 @@
 {
   "name": "monpar",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A monadic parser implemented in TS.",
   "repository": {
     "type": "git",
