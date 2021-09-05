@@ -24,17 +24,21 @@ This is an unambiguous (meaning it expects one correct output for each input) pa
 
 ## Parser type
 Let's think about what we want a parser to achieve for a second, let's take a simple string.
+
 ```ts
-"<p>This is inner text</p>"
+"Hello world"
 ```
-Our parser needs to recognize the structure and extract the desired content `This is inner text`. However, the parser can also fail, imagine we were given the following instead.
+
+Our parser needs to recognize the structure and extract the desired content `Hello world`. However, the parser can also fail, imagine we were given the following instead while we were only expecting alphabetical characters.
+
 ```ts
-"<p>This is inner text<p>"
+"{ value: 5 }"
 ```
 
 Thus, we can consider our parser essentially a function that takes in an input, processes it, and then returns some output indicating that the parsing went right and returns the desired content, or that the parsing has failed.
 
 In other words, take string as input, return result of parsing:
+
 ```ts
 type Parser<T> = (inp: string) => ParserRes<T>
 ```
@@ -53,7 +57,7 @@ type ParserRes<T> = [T, string][]
 parseHTML("<p>This is inner text</p>") // -> [["This is inner text", ""]]
 // This went well, and there is nothing left to parse!
 
-parseHTML("<p>This is inner text<p>") // -> []
+parseHTML("{ value: 5 }") // -> []
 // Ouch, an empty list, something went wrong.
 ```
 
@@ -74,15 +78,17 @@ The `take` parser is a parser exported from the library and it does something ve
 
 But what if we would like to take not one, but *two* characters of the string? We could do this
 ```ts
+const parserHasFailed = <T>(result: ParserRes<T>) => result.length === 0
+
 const takeTwo = inp => {
   const res = take("<p>This is inner text</p>")
   // Check if parser didn't return empty list
-  if (!res.length) return [];
+  if (parserHasFailed(res)) return [];
   const [[v, rem]] = res;
 
   // Parse for second element
   const res2 = take(rem);
-  if (!res2.length) return [];
+  if (parserHasFailed(res2)) return [];
   const [[v2, rem2]] = res2;
   return [[v + v2, rem2]]
 }
@@ -359,6 +365,8 @@ const input = `
 And we have a parser that can parse away an opening tag, a closing tag and checks whether the part in the middle is text, else assume that it's another node and recursively calls itself.
 
 ```ts
+import { alt, liftAs } from "monpar"
+
 const parseHTMLNode = liftAs(
   (tag: string) => (child: Node | string) => () => ({ node: tag, child }),
   parseOpeningTag,
