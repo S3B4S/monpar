@@ -5,7 +5,7 @@
 type ParserRes<T> = [T, string][]
 export type Parser<T> = (inp: string) => ParserRes<T>
 
-export const parserHasFailed = <T>(result: ParserRes<T>) => result.length === 0
+export const parserHasFailed = <T>(result: ParserRes<T>): boolean => result.length === 0
 
 // Thunks
 type LazyVal<T> = (() => T) | T

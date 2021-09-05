@@ -78,7 +78,7 @@ The `take` parser is a parser exported from the library and it does something ve
 
 But what if we would like to take not one, but *two* characters of the string? We could do this
 ```ts
-const parserHasFailed = <T>(result: ParserRes<T>) => result.length === 0
+const parserHasFailed = <T>(result: ParserRes<T>): boolean => result.length === 0
 
 const takeTwo = inp => {
   const res = take("<p>This is inner text</p>")
