@@ -435,4 +435,4 @@ alts(
 So, it's up to the reader what they would prefer, the important thing is knowing that the first parser always gets called, the ones that come afterwards _might_ get called.
 
 ## Credits
-Shoutout to [@emiflake](https://github.com/emiflake) for helping out with the creation of this library.
+Shout out to [@emiflake](https://github.com/emiflake) for helping out with the creation of this library.
