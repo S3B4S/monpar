@@ -259,7 +259,7 @@ alphaNumeric("****") // []
 ### alts
 Takes in a list of functions that return parsers, goes through the entire list until it finds a parser that successfully returns a result, else fails.
 This is a variation of `alt` where you can pass a list of parsers.
-The `LazyVal<Parser<T>>` type might surprise you a bit, despite a `Parser<T>` type being passed in the exmaple, the need for `LazyVal<Parser<T>>` is explained in [this section](#why-alts-can-take-thunks).
+The `LazyVal<Parser<T>>` type might surprise you a bit, despite a `Parser<T>` type being passed in the example, the need for `LazyVal<Parser<T>>` is explained in [this section](#why-alts-can-take-thunks).
 ```ts
 type alts = <T>(...parsers: LazyVal<Parser<T>>[]) => Parser<T>
 
