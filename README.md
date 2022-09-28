@@ -76,7 +76,7 @@ parseOpeningTag("<p>This is inner text</p>") // -> [["p", "This is inner text</p
 So, our parsers are essentially functions that take an input and return the result of parsing and might fail or succeed.
 
 ## Combining
-As mentioned in the introduction, the core idea behind this parser is to combine small blocks of parsers to form a bigger parser. How does this look like? Let's start with a small parser:
+As mentioned in the introduction, the core idea behind this parser is to combine small blocks of parsers to form a bigger parser. What does this look like? Let's start with a small parser:
 ```ts
 take("<p>This is inner text</p>") // -> [["<", "p>This is inner text</p>"]]
 ```
