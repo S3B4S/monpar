@@ -242,7 +242,7 @@ numeric("Bond") // []
 ### alt
 Given two parsers, going from left to right, return any successful result encountered, else fail.
 Note that both parsers should return the same result.
-The `LazyVal<Parser<T>>` type might surprise you a bit, despite a `Parser<T>` type being passed in the exmaple, the need for `LazyVal<Parser<T>>` is explained in [this section](#why-alts-can-take-thunks).
+The `LazyVal<Parser<T>>` type might surprise you a bit, despite a `Parser<T>` type being passed in the example, the need for `LazyVal<Parser<T>>` is explained in [this section](#why-alts-can-take-thunks).
 ```ts
 type alt = <T>(parserA: LazyVal<Parser<T>>, parserB: LazyVal<Parser<T>>) => Parser<T>
 
