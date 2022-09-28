@@ -346,6 +346,7 @@ When you would like to unpack the parsed result out of `Parser<T>`.
 Unpacking will happen successfully if
   - The parser returns a successful result
   - In the result, the remainder of the input is empty (meaning, unpack expects the entire string to have gone through the parser)
+
 Else it will return `undefined`.
 ```ts
 type unpack = <T>(parser: Parser<T>) => (inp: string) => T | undefined
