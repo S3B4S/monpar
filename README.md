@@ -1,5 +1,5 @@
 # MonPar
-This is an unambiguous (meaning it expects one correct output for each input) parser that makes use of combinators to combine small pieces of parsers to create bigger ones. Try it out straight away on [runkit](https://npm.runkit.com/monpar).
+This is an unambiguous (meaning it expects one correct output for each input) parser that makes use of combinators to combine small pieces of parsers to create bigger ones. Try it out straight away on [npmjs](https://npmjs.dev/monpar).
 
 # Guide
 - [Installing](#installing)
